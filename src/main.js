@@ -36,10 +36,9 @@ class Plancton {
       console.log("adding plancton");
     }
   }
-
 }
 
-while (planctons.length < 45) {
+while (planctons.length < 10) {
   planctons.push(new Plancton());
 }
 
@@ -48,13 +47,13 @@ class Biota {
     this.id = id;
     this.limbs = random(5, 20);
     this.size = this.limbs;
-    this.velX = 0.05 * this.limbs;
-    this.velY = 0.05 * this.limbs;
+    this.velX = 0.02 * this.limbs;
+    this.velY = 0.02 * this.limbs;
     this.color = "rgb(" + random(0, 255) + "," + random(0, 255) + "," +
       random(0, 255) + ")";
     this.x = random(0 + this.size, width);
     this.y = random(0 + this.size, height);
-    this.energy = (1000 * this.size) * random(5, 10);
+    this.energy = (100 * this.size) * random(5, 10);
     this.lastX = 0;
     this.lastY = 0;
     this.distanceTravelled = 0;
@@ -86,13 +85,38 @@ class Biota {
       this.velY = -(this.velY);
     }
 
-    this.lastX, this.lastY = this.x, this.lastY;
-    this.x += (this.velX + random(-1, 1));
-    this.y += (this.velY + random(-1, 1));
-   
+    // go for the nearest plancton
+    let goal = this.nearestPlanction();
+    const a = (goal.y - this.y) / (goal.x - this.x);
+
+    // calculate burn
+    this.lastX = this.x;
+    this.lastY = this.lastY;
+    this.x += this.velX;
+    // this.x += (this.velX + random(-1, 1));
+    // this.y += (this.velY + random(-1, 1));
+    this.y += a * this.velX;
+
     let dst = distance((this.lastX - this.x), (this.lastY - this.y));
     this.distanceTravelled += dst;
-    this.burn(dst); 
+    // this.burn(dst); 
+  }
+
+  nearestPlanction() {
+    let minDst = Number.MAX_SAFE_INTEGER;
+    let x = 0;
+    let y = 0;
+  
+    planctons.forEach(p => {
+      let dst = distance((this.x - p.x), (this.y - p.y));
+      if (dst < minDst) {
+        minDst = dst;
+        x = p.x;
+        y = p.y;
+      }
+    });
+
+    return { x: x, y: y }
   }
 
   // burn burns biotas energy based on how much distance it travelled
@@ -121,7 +145,7 @@ class Biota {
       if (dst < this.size + planctons[j].size) {
         this.energy += planctons[j].size;
         planctons.splice(j, 1);
-        console.log("biota energy level", this.energy);
+        console.log("biota energy level", this.id, this.energy);
         break;
       }
     }
