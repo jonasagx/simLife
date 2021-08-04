@@ -30,10 +30,16 @@ class Plancton {
     ctx.fillStyle = this.color;
     ctx.arc(this.x, this.y, planctonSize, 0, 2 * Math.PI);
     ctx.fill();
+
+    if (planctons.length < 50) {
+      planctons.push(new Plancton());
+      console.log("adding plancton");
+    }
   }
+
 }
 
-while (planctons.length < 100) {
+while (planctons.length < 45) {
   planctons.push(new Plancton());
 }
 
@@ -89,6 +95,8 @@ class Biota {
     this.burn(dst); 
   }
 
+  // burn burns biotas energy based on how much distance it travelled
+  // if the energy level is equals or bellow zero the biota dies.
   burn(dst) {
     this.energy -= dst * 0.004;
 
