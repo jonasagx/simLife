@@ -4,11 +4,13 @@ const ctx = canvas.getContext("2d");
 const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
-// function to generate random number
-
 function random(min, max) {
   const num = Math.floor(Math.random() * (max - min + 1)) + min;
   return num;
+}
+
+function distance(dx, dy) {
+  return Math.sqrt(dx * dx + dy * dy)
 }
 
 let biotas = [];
@@ -31,12 +33,13 @@ class Plancton {
   }
 }
 
-while (planctons.length < 10) {
+while (planctons.length < 100) {
   planctons.push(new Plancton());
 }
 
 class Biota {
-  constructor() {
+  constructor(id) {
+    this.id = id;
     this.limbs = random(5, 20);
     this.size = this.limbs;
     this.velX = 0.05 * this.limbs;
@@ -45,7 +48,10 @@ class Biota {
       random(0, 255) + ")";
     this.x = random(0 + this.size, width);
     this.y = random(0 + this.size, height);
-    this.energy = 0;
+    this.energy = (1000 * this.size) * random(5, 10);
+    this.lastX = 0;
+    this.lastY = 0;
+    this.distanceTravelled = 0;
   }
 
   draw() {
@@ -74,39 +80,60 @@ class Biota {
       this.velY = -(this.velY);
     }
 
+    this.lastX, this.lastY = this.x, this.lastY;
     this.x += (this.velX + random(-1, 1));
     this.y += (this.velY + random(-1, 1));
+   
+    let dst = distance((this.lastX - this.x), (this.lastY - this.y));
+    this.distanceTravelled += dst;
+    this.burn(dst); 
+  }
+
+  burn(dst) {
+    this.energy -= dst * 0.004;
+
+    if (this.energy > 0) {
+      return 
+    } 
+
+    biotas.forEach((b, i) => {
+      if (this.id == b.id) {
+        console.log("bye", b.id)
+        biotas.splice(i, 1);
+      }
+    })
   }
 
   eat() {
     for (let j = 0; j < planctons.length; j++) {
       const dx = this.x - planctons[j].x;
       const dy = this.y - planctons[j].y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const dst = distance(dx, dy);
 
-      if (distance < this.size + planctons[j].size) {
+      if (dst < this.size + planctons[j].size) {
         this.energy += planctons[j].size;
         planctons.splice(j, 1);
+        console.log("biota energy level", this.energy);
         break;
       }
     }
+  }
 }
 
-}
-while (biotas.length < 10) {
-  biotas.push(new Biota());
+for (let i = 0; i < 10; i++) {
+  biotas.push(new Biota(i));
 }
 
 // define loop that keeps drawing the scene constantly
 function loop() {
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillStyle = "rgb(0,0,0,0.25)";
   ctx.fillRect(0, 0, width, height);
 
   planctons.forEach(p => {
     p.draw()
   });
 
- biotas.forEach(b => {
+  biotas.forEach(b => {
     b.draw();
     b.move();
     b.eat();
