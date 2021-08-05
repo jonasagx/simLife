@@ -33,7 +33,6 @@ class Plancton {
 
     if (planctons.length < 50) {
       planctons.push(new Plancton());
-      console.log("adding plancton");
     }
   }
 }
@@ -89,17 +88,40 @@ class Biota {
     let goal = this.nearestPlanction();
     const a = (goal.y - this.y) / (goal.x - this.x);
 
-    // calculate burn
+    // calculate distance
     this.lastX = this.x;
     this.lastY = this.lastY;
     this.x += this.velX;
-    // this.x += (this.velX + random(-1, 1));
-    // this.y += (this.velY + random(-1, 1));
     this.y += a * this.velX;
 
     let dst = distance((this.lastX - this.x), (this.lastY - this.y));
     this.distanceTravelled += dst;
-    // this.burn(dst); 
+    this.burn(dst); 
+  }
+
+  replicate() {
+    if (this.energy < 10000) {
+      return;
+    }
+    let copy = this.clone();
+    biotas.push(copy);
+    console.log("replicated", this.id, this.energy);
+    this.energy -= 10000;
+  }
+
+  clone() {
+    let copy = new Biota();
+    copy.x = this.x + random(-5, 5) + this.size;
+    copy.y = this.y + random(-5, 5) + this.size;
+    copy.id = this.id + "_copy";
+    copy.limbs = this.limbs;
+    copy.size = this.size;
+    copy.velX = 0.02 * copy.limbs;
+    copy.velY = 0.02 * copy.limbs;
+    copy.color = this.color;
+    copy.energy = (100 * this.size) * random(5, 10);
+
+    return copy;
   }
 
   nearestPlanction() {
@@ -146,6 +168,7 @@ class Biota {
         this.energy += planctons[j].size;
         planctons.splice(j, 1);
         console.log("biota energy level", this.id, this.energy);
+        this.replicate();
         break;
       }
     }
