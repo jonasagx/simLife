@@ -114,8 +114,8 @@ class Biota {
     copy.x = this.x + random(-5, 5) + this.size;
     copy.y = this.y + random(-5, 5) + this.size;
     copy.id = this.id + "_copy";
-    copy.limbs = this.limbs;
-    copy.size = this.size;
+    copy.limbs = Math.max(this.limbs, this.limbs + random(-10, 10));
+    copy.size = copy.limbs;
     copy.velX = 0.02 * copy.limbs;
     copy.velY = 0.02 * copy.limbs;
     copy.color = this.color;
