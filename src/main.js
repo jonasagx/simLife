@@ -31,13 +31,13 @@ class Plancton {
     ctx.arc(this.x, this.y, planctonSize, 0, 2 * Math.PI);
     ctx.fill();
 
-    if (planctons.length < 50) {
+    if (planctons.length < 30) {
       planctons.push(new Plancton());
     }
   }
 }
 
-while (planctons.length < 10) {
+while (planctons.length < 30) {
   planctons.push(new Plancton());
 }
 
@@ -56,6 +56,8 @@ class Biota {
     this.lastX = 0;
     this.lastY = 0;
     this.distanceTravelled = 0;
+
+    this.dragging = false;
   }
 
   draw() {
@@ -68,6 +70,9 @@ class Biota {
   }
 
   move() {
+    if (this.dragging) {
+      return;
+    }
     if ((this.x + this.size) >= width) {
       this.velX = -(this.velX);
     }
@@ -100,7 +105,7 @@ class Biota {
   }
 
   replicate() {
-    if (this.energy < 10000) {
+    if (this.energy < 15000) {
       return;
     }
     let copy = this.clone();
@@ -114,7 +119,7 @@ class Biota {
     copy.x = this.x + random(-5, 5) + this.size;
     copy.y = this.y + random(-5, 5) + this.size;
     copy.id = this.id + "_copy";
-    copy.limbs = Math.max(this.limbs, this.limbs + random(-10, 10));
+    copy.limbs = Math.min(this.limbs, this.limbs + random(-2, 2));
     copy.size = copy.limbs;
     copy.velX = 0.02 * copy.limbs;
     copy.velY = 0.02 * copy.limbs;
@@ -155,8 +160,9 @@ class Biota {
         console.log("bye", b.id)
         biotas.splice(i, 1);
       }
-    })
+    });
   }
+
 
   eat() {
     for (let j = 0; j < planctons.length; j++) {
@@ -173,6 +179,41 @@ class Biota {
       }
     }
   }
+}
+
+function findNearestBiota(items, x, y) {
+  for (var i = items.length - 1; i >= 0; i--) {
+    let dst = distance((items[i].x - x), (items[i].y - y));
+    if (dst <= items[i].size) {
+      return items[i]
+    }    
+  }
+
+  return {};
+}
+
+function addDragEventListeners() {
+  canvas.addEventListener('mousedown', e => {
+    b = findNearestBiota(biotas, e.offsetX, e.offsetY);
+    b.dragging = true;
+    b.x = e.offsetX;
+    b.y = e.offsetY;
+
+    canvas.addEventListener('mousemove', e => {
+      if (!b.dragging) {
+        return;
+      }
+      b.x = e.offsetX;
+      b.y = e.offsetY;
+    });
+
+    window.addEventListener('mouseup', _ => {
+      if (b.dragging) {
+        b.dragging = false;
+      }
+    });
+
+  });
 }
 
 for (let i = 0; i < 10; i++) {
@@ -196,4 +237,5 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+addDragEventListeners();
 loop();
