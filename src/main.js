@@ -19,8 +19,8 @@ let planctons = [];
 const planctonSize = 5;
 class Plancton {
   constructor() {
-    this.x = random(0 + planctonSize, width);
-    this.y = random(0 + planctonSize, height);
+    this.x = random(0 + planctonSize, width - planctonSize);
+    this.y = random(0 + planctonSize, height - planctonSize);
     this.color = "RGBA(255, 255, 0, 1)";
     this.size = planctonSize;
   }
@@ -63,7 +63,7 @@ class Biota {
   draw() {
     ctx.beginPath();
     // ctx.fillStyle = this.color;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 5;
     ctx.strokeStyle = this.color;
     ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx.stroke();
@@ -73,31 +73,30 @@ class Biota {
     if (this.dragging) {
       return;
     }
-    if ((this.x + this.size) >= width) {
-      this.velX = -(this.velX);
-    }
-
-    if ((this.x - this.size) <= 0) {
-      this.velX = -(this.velX);
-    }
-
-    if ((this.y + this.size) >= height) {
-      this.velY = -(this.velY);
-    }
-
-    if ((this.y - this.size) <= 0) {
-      this.velY = -(this.velY);
-    }
 
     // go for the nearest plancton
-    let goal = this.nearestPlanction();
+    let goal = this.nearestPlancton();
     const a = (goal.y - this.y) / (goal.x - this.x);
+    // console.log("nearest plancton", goal, a);
 
     // calculate distance
     this.lastX = this.x;
     this.lastY = this.lastY;
-    this.x += this.velX;
-    this.y += a * this.velX;
+
+    if (this.x > goal.x) {
+      this.x -= this.velX;      
+    } else if (this.x < goal.x) {
+      this.x += this.velX;
+    }
+
+    if (this.y > goal.x) {
+      this.y -= (a * this.velY);      
+    } else if (goal.y < this.y) {
+      this.y += (a * this.velX);
+    }
+
+    // this.x += this.velX;
+    // this.y += (a * this.velX);
 
     let dst = distance((this.lastX - this.x), (this.lastY - this.y));
     this.distanceTravelled += dst;
@@ -129,7 +128,7 @@ class Biota {
     return copy;
   }
 
-  nearestPlanction() {
+  nearestPlancton() {
     let minDst = Number.MAX_SAFE_INTEGER;
     let x = 0;
     let y = 0;
@@ -173,7 +172,7 @@ class Biota {
       if (dst < this.size + planctons[j].size) {
         this.energy += planctons[j].size;
         planctons.splice(j, 1);
-        console.log("biota energy level", this.id, this.energy);
+        // console.log("biota energy level", this.id, this.energy);
         this.replicate();
         break;
       }
@@ -195,6 +194,14 @@ function findNearestBiota(items, x, y) {
 function addDragEventListeners() {
   canvas.addEventListener('mousedown', e => {
     b = findNearestBiota(biotas, e.offsetX, e.offsetY);
+    if (Object.keys(b).length === 0) {
+      p = new Plancton();
+      p.x = e.clientX;
+      p.y = e.clientY;
+      planctons.push(p);
+      return; 
+    }
+
     b.dragging = true;
     b.x = e.offsetX;
     b.y = e.offsetY;
@@ -212,11 +219,10 @@ function addDragEventListeners() {
         b.dragging = false;
       }
     });
-
   });
 }
 
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 2; i++) {
   biotas.push(new Biota(i));
 }
 
