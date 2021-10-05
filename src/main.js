@@ -25,26 +25,27 @@ class Plancton {
     this.size = planctonSize;
   }
 
-  draw() {
+  draw(keepPupulationSize) {
     ctx.beginPath();
     ctx.fillStyle = this.color;
     ctx.arc(this.x, this.y, planctonSize, 0, 2 * Math.PI);
     ctx.fill();
 
-    if (planctons.length < 30) {
+    if (keepPupulationSize && planctons.length < 30) {
       planctons.push(new Plancton());
     }
   }
 }
 
-while (planctons.length < 30) {
-  planctons.push(new Plancton());
-}
+// while (planctons.length < 30) {
+//   planctons.push(new Plancton());
+// }
 
 class Biota {
   constructor(id) {
     this.id = id;
-    this.limbs = random(5, 20);
+    // this.limbs = random(5, 20);
+    this.limbs = 10;
     this.size = this.limbs;
     this.velX = 0.02 * this.limbs;
     this.velY = 0.02 * this.limbs;
@@ -56,6 +57,7 @@ class Biota {
     this.lastX = 0;
     this.lastY = 0;
     this.distanceTravelled = 0;
+    this.goal = {};
 
     this.dragging = false;
   }
@@ -76,31 +78,42 @@ class Biota {
 
     // go for the nearest plancton
     let goal = this.nearestPlancton();
-    const a = (goal.y - this.y) / (goal.x - this.x);
-    // console.log("nearest plancton", goal, a);
+    if (goal.x == 0 && goal.y == 0) {
+      // without a goal just chill
+      return
+    }
+
+    if (this.goal == {}) {
+      this.goal = goal;
+      let deltaX = Math.abs(goal.x - this.x);
+      let deltaY = Math.abs(goal.y - this.y);
+      this.stepX = deltaX / 200;
+      this.stepY = deltaY / 200;
+      console.log(this.stepX, this.stepY);
+    }
+
+    // const a = (goal.y - this.y) / (goal.x - this.x);
+    // // console.log(a)
 
     // calculate distance
     this.lastX = this.x;
     this.lastY = this.lastY;
 
     if (this.x > goal.x) {
-      this.x -= this.velX;      
+      this.x -= this.stepX;
     } else if (this.x < goal.x) {
-      this.x += this.velX;
+      this.x += this.stepX;
     }
 
     if (this.y > goal.x) {
-      this.y -= (a * this.velY);      
+      this.y -= this.stepY;
     } else if (goal.y < this.y) {
-      this.y += (a * this.velX);
+      this.y += this.stepY;
     }
 
-    // this.x += this.velX;
-    // this.y += (a * this.velX);
-
-    let dst = distance((this.lastX - this.x), (this.lastY - this.y));
-    this.distanceTravelled += dst;
-    this.burn(dst); 
+    let totalDST = distance((this.lastX - this.x), (this.lastY - this.y));
+    this.distanceTravelled += totalDST;
+    this.burn(totalDST);
   }
 
   replicate() {
@@ -128,6 +141,10 @@ class Biota {
     return copy;
   }
 
+  // TODO: add tests
+  // NOTE: having this calculated for everyframe is overkill
+  // and might be responsible for the bug where the biota gets 
+  // stuck between possible planctons
   nearestPlancton() {
     let minDst = Number.MAX_SAFE_INTEGER;
     let x = 0;
@@ -217,12 +234,13 @@ function addDragEventListeners() {
     window.addEventListener('mouseup', _ => {
       if (b.dragging) {
         b.dragging = false;
+        console.log("my new position is", b.x, b.y)
       }
     });
   });
 }
 
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < 1; i++) {
   biotas.push(new Biota(i));
 }
 
@@ -232,7 +250,7 @@ function loop() {
   ctx.fillRect(0, 0, width, height);
 
   planctons.forEach(p => {
-    p.draw()
+    p.draw(false)
   });
 
   biotas.forEach(b => {
