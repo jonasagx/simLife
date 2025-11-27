@@ -52,23 +52,15 @@ python -m http.server 8080
 
 ### Planned Features
 
-#### Short-term
 - [ ] Performance optimization for nearest plankton calculation
 - [ ] Statistics dashboard (population, energy levels, generations)
 - [ ] Pause/play/speed controls
 - [ ] Adjustable simulation parameters (mutation rate, energy costs)
-
-#### Mid-term
-- [ ] Enhanced visual effects and rendering options
 - [ ] Save/load simulation state
 - [ ] Historical tracking of evolutionary changes
 - [ ] Predator-prey dynamics (multiple species)
 - [ ] Environmental hazards and obstacles
-
-#### Long-term
 - [ ] Genetic algorithm refinement
-- [ ] Neural network-based behavior
-- [ ] Multi-environment simulations
 - [ ] Data export for analysis
 - [ ] Community sharing of interesting simulations
 
